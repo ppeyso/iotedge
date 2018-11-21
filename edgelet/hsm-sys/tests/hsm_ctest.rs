@@ -5,7 +5,8 @@
 // which can only be silenced by enabling a feature and thus requires nightly
 //
 // Ref: https://github.com/rust-lang-nursery/rust-clippy/issues/3159#issuecomment-420530386
-#![allow(renamed_and_removed_lints)]
+// Allow unused imports because ctest application is not invoked on arm targets
+#![allow(renamed_and_removed_lints, unused_imports)]
 #![cfg_attr(feature = "cargo-clippy", deny(clippy, clippy_pedantic))]
 
 extern crate num_cpus;
