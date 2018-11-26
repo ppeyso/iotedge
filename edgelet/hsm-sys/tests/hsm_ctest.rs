@@ -6,7 +6,11 @@
 //
 // Ref: https://github.com/rust-lang-nursery/rust-clippy/issues/3159#issuecomment-420530386
 // Allow unused imports and unused external crates because ctest application is not invoked on arm targets
-#![allow(renamed_and_removed_lints, unused_imports, unused_extern_crates)]
+#![allow(
+    renamed_and_removed_lints, 
+    unused_imports, 
+    unused_extern_crates
+)]
 #![cfg_attr(feature = "cargo-clippy", deny(clippy, clippy_pedantic))]
 
 extern crate num_cpus;
