@@ -21,5 +21,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Core
         Task<ICommand> StopAsync(IModule module);
 
         Task<ICommand> WrapAsync(ICommand command);
+
+        Task<ICommand> PrepareUpdateAsync(IModule module);
     }
 }

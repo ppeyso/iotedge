@@ -193,11 +193,10 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Core.Planners
             // extract list of modules that need attention
             (IList<IModule> added, IList<IModule> updateDeployed, IList<IRuntimeModule> updateStateChanged, IList<IRuntimeModule> removed, IList<IRuntimeModule> runningGreat) = this.ProcessDiff(desired, current);
 
-            List<ICommand> updateRuntimeCommands = await this.GetUpdateRuntimeCommands(updateDeployed, moduleIdentities, runtimeInfo);
+            List<ICommand> updateRuntimeCommands = await this.GetUpdateRuntimeCommands(current, updateDeployed, moduleIdentities, runtimeInfo);
 
-            // create "stop" commands for modules that have been updated/removed
-            IEnumerable<Task<ICommand>> stopTasks = updateDeployed
-                .Concat(removed)
+            // create "stop" commands for modules that have been removed
+            IEnumerable<Task<ICommand>> stopTasks = removed
                 .Select(m => this.commandFactory.StopAsync(m));
             IEnumerable<ICommand> stop = await Task.WhenAll(stopTasks);
 
@@ -218,6 +217,10 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Core.Planners
                 moduleIdentities,
                 m => this.commandFactory.CreateAsync(m, runtimeInfo)
             );
+
+            IEnumerable<Task<ICommand>> prepareUpdateTasks =  updateDeployed
+                .Select(m => this.commandFactory.PrepareUpdateAsync(m));
+            IEnumerable<ICommand> prepareUpdateCommands = await Task.WhenAll(prepareUpdateTasks);
 
             IEnumerable<ICommand> updatedCommands = await this.ProcessAddedUpdatedModules(
                 updateDeployed,
@@ -254,10 +257,11 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Core.Planners
             return new Plan(commands);
         }
 
-        async Task<List<ICommand>> GetUpdateRuntimeCommands(IList<IModule> updateDeployed, IImmutableDictionary<string, IModuleIdentity> moduleIdentities, IRuntimeInfo runtimeInfo)
+        async Task<List<ICommand>> GetUpdateRuntimeCommands(ModuleSet current, IList<IModule> updateDeployed, IImmutableDictionary<string, IModuleIdentity> moduleIdentities, IRuntimeInfo runtimeInfo)
         {
             var updateRuntimeCommands = new List<ICommand>();
             IModule edgeAgentModule = updateDeployed.FirstOrDefault(m => m.Name.Equals(Constants.EdgeAgentModuleName, StringComparison.OrdinalIgnoreCase));
+            current.TryGetModule(Constants.EdgeAgentModuleName, out IModule currentModule);
             if (edgeAgentModule != null)
             {
                 if (moduleIdentities.TryGetValue(edgeAgentModule.Name, out IModuleIdentity edgeAgentIdentity))

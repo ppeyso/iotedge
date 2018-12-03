@@ -4,6 +4,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet
 {
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Edge.Agent.Core;
+    using Microsoft.Azure.Devices.Edge.Agent.Core.Commands;
     using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Commands;
     using Microsoft.Azure.Devices.Edge.Util;
 
@@ -19,7 +20,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet
             this.configSource = Preconditions.CheckNotNull(configSource, nameof(configSource));
             this.combinedConfigProvider = Preconditions.CheckNotNull(combinedConfigProvider, nameof(combinedConfigProvider));
         }
-        
+
         public Task<ICommand> CreateAsync(IModuleWithIdentity module, IRuntimeInfo runtimeInfo) =>
             Task.FromResult(CreateOrUpdateCommand.BuildCreate(
                 this.moduleManager,
@@ -34,14 +35,20 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet
         public Task<ICommand> UpdateEdgeAgentAsync(IModuleWithIdentity module, IRuntimeInfo runtimeInfo) =>
             this.UpdateAsync(module, runtimeInfo, true);
 
-        Task<ICommand> UpdateAsync(IModuleWithIdentity module, IRuntimeInfo runtimeInfo, bool start) =>
-            Task.FromResult(CreateOrUpdateCommand.BuildUpdate(
-                 this.moduleManager,
-                 module.Module,
-                 module.ModuleIdentity,
-                 this.configSource,
-                 this.combinedConfigProvider.GetCombinedConfig(module.Module, runtimeInfo),
-                 start) as ICommand);
+        async Task<ICommand> UpdateAsync(IModuleWithIdentity module, IRuntimeInfo runtimeInfo, bool start)
+        {
+            var config = this.combinedConfigProvider.GetCombinedConfig(module.Module, runtimeInfo);
+            return new GroupCommand(
+                this.PrepareUpdateAsync(module.Module, config),
+                await this.StopAsync(module.Module), // TODO: set next for stop
+                CreateOrUpdateCommand.BuildUpdate(
+                    this.moduleManager,
+                    module.Module,
+                    module.ModuleIdentity,
+                    this.configSource,
+                    config,
+                    start) as ICommand);
+        }
 
         public Task<ICommand> RemoveAsync(IModule module) => Task.FromResult(new RemoveCommand(this.moduleManager, module) as ICommand);
 
@@ -52,5 +59,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet
         public Task<ICommand> RestartAsync(IModule module) => Task.FromResult(new RestartCommand(this.moduleManager, module) as ICommand);
 
         public Task<ICommand> WrapAsync(ICommand command) => Task.FromResult(command);
+
+        ICommand PrepareUpdateAsync(IModule module, object settings) => new PrepareUpdateCommand(this.moduleManager, module, settings);
     }
 }
