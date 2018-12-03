@@ -218,10 +218,6 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Core.Planners
                 m => this.commandFactory.CreateAsync(m, runtimeInfo)
             );
 
-            IEnumerable<Task<ICommand>> prepareUpdateTasks =  updateDeployed
-                .Select(m => this.commandFactory.PrepareUpdateAsync(m));
-            IEnumerable<ICommand> prepareUpdateCommands = await Task.WhenAll(prepareUpdateTasks);
-
             IEnumerable<ICommand> updatedCommands = await this.ProcessAddedUpdatedModules(
                 updateDeployed,
                 moduleIdentities,
@@ -267,7 +263,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Core.Planners
                 if (moduleIdentities.TryGetValue(edgeAgentModule.Name, out IModuleIdentity edgeAgentIdentity))
                 {
                     updateDeployed.Remove(edgeAgentModule);
-                    ICommand updateEdgeAgentCommand = await this.commandFactory.UpdateEdgeAgentAsync(new ModuleWithIdentity(edgeAgentModule, edgeAgentIdentity), runtimeInfo);
+                    ICommand updateEdgeAgentCommand = await this.commandFactory.UpdateEdgeAgentAsync(currentModule, new ModuleWithIdentity(edgeAgentModule, edgeAgentIdentity), runtimeInfo);
                     updateRuntimeCommands.Add(updateEdgeAgentCommand);
                 }
                 else
