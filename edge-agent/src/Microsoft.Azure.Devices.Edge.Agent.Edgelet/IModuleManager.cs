@@ -28,6 +28,6 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet
 
         Task<IEnumerable<ModuleRuntimeInfo>> GetModules<T>(CancellationToken token);
 
-        Task PrepareUpdate(ModuleSpec moduleSpec);
+        Task PrepareUpdateAsync(ModuleSpec moduleSpec);
     }
 }

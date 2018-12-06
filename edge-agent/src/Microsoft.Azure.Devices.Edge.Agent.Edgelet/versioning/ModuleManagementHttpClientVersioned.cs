@@ -17,11 +17,15 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning
         static readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy = new ErrorDetectionStrategy();
         static readonly RetryStrategy TransientRetryStrategy =
             new ExponentialBackoff(retryCount: 3, minBackoff: TimeSpan.FromSeconds(2), maxBackoff: TimeSpan.FromSeconds(30), deltaBackoff: TimeSpan.FromSeconds(3));
-        protected readonly Uri managementUri;
 
-        protected ModuleManagementHttpClientVersioned(Uri managementUri)
+        protected Uri ManagementUri { get; }
+
+        internal ApiVersion Version { get; }
+
+        protected ModuleManagementHttpClientVersioned(Uri managementUri, ApiVersion version)
         {
-            this.managementUri = managementUri;
+            this.ManagementUri = managementUri;
+            this.Version = version;
         }
 
         public abstract Task<Identity> CreateIdentityAsync(string name, string managedBy);
@@ -50,7 +54,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning
 
         public abstract Task UpdateAndStartModuleAsync(ModuleSpec moduleSpec);
 
-        public abstract Task PrepareUpdate(ModuleSpec moduleSpec);
+        public abstract Task PrepareUpdateAsync(ModuleSpec moduleSpec);
 
         protected abstract void HandleException(Exception ex, string operation);
 
@@ -67,15 +71,15 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning
         {
             try
             {
-                Events.ExecutingOperation(operation, this.managementUri.ToString());
-                T result = await ExecuteWithRetry(func, r => Events.RetryingOperation(operation, this.managementUri.ToString(), r));
-                Events.SuccessfullyExecutedOperation(operation, this.managementUri.ToString());
+                Events.ExecutingOperation(operation, this.ManagementUri.ToString());
+                T result = await ExecuteWithRetry(func, r => Events.RetryingOperation(operation, this.ManagementUri.ToString(), r));
+                Events.SuccessfullyExecutedOperation(operation, this.ManagementUri.ToString());
                 return result;
             }
             catch (Exception ex)
             {
                 HandleException(ex, operation);
-                Events.SuccessfullyExecutedOperation(operation, this.managementUri.ToString());
+                Events.SuccessfullyExecutedOperation(operation, this.ManagementUri.ToString());
                 return default(T);
             }
         }

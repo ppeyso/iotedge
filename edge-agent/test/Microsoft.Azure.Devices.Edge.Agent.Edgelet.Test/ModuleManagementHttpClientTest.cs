@@ -7,10 +7,13 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.ApplicationInsights.Extensibility.Implementation;
     using Microsoft.Azure.Devices.Edge.Agent.Core;
     using Microsoft.Azure.Devices.Edge.Agent.Core.Test;
     using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Models;
     using Microsoft.Azure.Devices.Edge.Util.Test.Common;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using Xunit;
 
     [Unit]
@@ -18,18 +21,20 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
     {
         readonly Uri serverUrl;
         readonly string apiVersion;
+        readonly string clientApiVersion;
 
         public ModuleManagementHttpClientTest(EdleletFixture edleletFixture)
         {
             this.serverUrl = new Uri(edleletFixture.ServiceUrl);
             this.apiVersion = "2018-06-28";
+            this.clientApiVersion = Constants.EdgeletManagementApiVersion;
         }
 
         [Fact]
         public async Task IdentityTest()
         {
             // Arrange
-            IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion);
+            IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion, this.clientApiVersion);
 
             // Act
             Identity identity1 = await client.CreateIdentityAsync("Foo", Constants.ModuleIdentityEdgeManagedByValue);
@@ -98,13 +103,13 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
         public async Task ModulesTest()
         {
             // Arrange
-            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion);
+            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion, this.clientApiVersion);
             var moduleSpec = new ModuleSpec
             {
                 Name = "Module1",
                 Type = "Docker",
                 EnvironmentVariables = new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar { Key = "E1", Value = "P1" } },
-                Settings = "{ \"image\": \"testimage\" }"
+                Settings = JObject.Parse("{ \"image\": \"testimage\" }")
             };
 
             // Act
@@ -135,6 +140,32 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             Assert.NotNull(moduleDetails);
             Assert.Equal(ModuleStatus.Stopped, moduleDetails.ModuleStatus);
 
+            // Act
+            await client.RestartModuleAsync(moduleSpec.Name);
+            moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
+
+            // Assert
+            Assert.NotNull(moduleDetails);
+            Assert.Equal(ModuleStatus.Running, moduleDetails.ModuleStatus);
+
+            // Act
+            moduleSpec.EnvironmentVariables.ToList().Add(new EnvVar() { Key = "test", Value = "added"});
+            await client.UpdateModuleAsync(moduleSpec);
+            moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
+
+            // Assert
+            Assert.NotNull(moduleDetails);
+            Assert.Equal(ModuleStatus.Unknown, moduleDetails.ModuleStatus);
+
+            // Act
+            moduleSpec.EnvironmentVariables.ToList().Add(new EnvVar() { Key = "test", Value = "added" });
+            await client.UpdateAndStartModuleAsync(moduleSpec);
+            moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
+
+            // Assert
+            Assert.NotNull(moduleDetails);
+            Assert.Equal(ModuleStatus.Running, moduleDetails.ModuleStatus);
+
             // Act - Stopping a stopped module should not throw
             await client.StopModuleAsync(moduleSpec.Name);
             moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
@@ -149,6 +180,21 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
 
             // Assert
             Assert.Null(moduleDetails);
+        }
+
+        [Fact]
+        public async Task Test_PrepareUpdate_ShouldSucceed()
+        {
+            // Arrange
+            var moduleSpec = new ModuleSpec
+            {
+                Name = "Module1",
+                Type = "Docker",
+                EnvironmentVariables = new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar { Key = "E1", Value = "P1" } },
+                Settings = JObject.Parse("{ \"image\": \"testimage\" }")
+            };
+            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion, this.clientApiVersion);
+            await client.PrepareUpdateAsync(moduleSpec);
         }
     }
 }
