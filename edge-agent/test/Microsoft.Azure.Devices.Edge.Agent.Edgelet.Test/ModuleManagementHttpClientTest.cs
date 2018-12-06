@@ -8,7 +8,8 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Edge.Agent.Core;
-    using Microsoft.Azure.Devices.Edge.Agent.Edgelet.GeneratedCode;
+    using Microsoft.Azure.Devices.Edge.Agent.Core.Test;
+    using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Models;
     using Microsoft.Azure.Devices.Edge.Util.Test.Common;
     using Xunit;
 
@@ -16,17 +17,19 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
     public class ModuleManagementHttpClientTest : IClassFixture<EdleletFixture>
     {
         readonly Uri serverUrl;
+        readonly string apiVersion;
 
         public ModuleManagementHttpClientTest(EdleletFixture edleletFixture)
         {
             this.serverUrl = new Uri(edleletFixture.ServiceUrl);
+            this.apiVersion = "2018-06-28";
         }
 
         [Fact]
         public async Task IdentityTest()
         {
             // Arrange
-            IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl);
+            IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion);
 
             // Act
             Identity identity1 = await client.CreateIdentityAsync("Foo", Constants.ModuleIdentityEdgeManagedByValue);
@@ -46,7 +49,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
 
             // Act
             Identity identity4 = await client.UpdateIdentityAsync("Foo", identity1.GenerationId, identity1.ManagedBy);
-            Identity identity5 = await client.UpdateIdentityAsync("Bar", identity2.GenerationId, identity2.ManagedBy);            
+            Identity identity5 = await client.UpdateIdentityAsync("Bar", identity2.GenerationId, identity2.ManagedBy);
             Identity identity6 = await client.UpdateIdentityAsync("External", identity3.GenerationId, identity3.ManagedBy);
 
             // Assert
@@ -74,7 +77,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             Assert.Equal("Bar", identities[0].ModuleId);
             Assert.Equal("External", identities[1].ModuleId);
             Assert.Equal("Foo", identities[2].ModuleId);
-            Assert.Equal(Constants.ModuleIdentityEdgeManagedByValue, identities[0].ManagedBy);            
+            Assert.Equal(Constants.ModuleIdentityEdgeManagedByValue, identities[0].ManagedBy);
             Assert.Equal("Someone", identities[1].ManagedBy);
             Assert.Equal(Constants.ModuleIdentityEdgeManagedByValue, identities[2].ManagedBy);
 
@@ -95,57 +98,54 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
         public async Task ModulesTest()
         {
             // Arrange
-            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl);
+            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion);
             var moduleSpec = new ModuleSpec
             {
                 Name = "Module1",
                 Type = "Docker",
-                Config = new Config
-                {
-                    Env = new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar { Key = "E1", Value = "P1" } },
-                    Settings = "{ \"image\": \"testimage\" }"
-                }
+                EnvironmentVariables = new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar { Key = "E1", Value = "P1" } },
+                Settings = "{ \"image\": \"testimage\" }"
             };
 
             // Act
             await client.CreateModuleAsync(moduleSpec);
-            ModuleDetails moduleDetails = (await client.GetModules(CancellationToken.None)).FirstOrDefault();
+            ModuleRuntimeInfo moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
 
             // Assert
             Assert.NotNull(moduleDetails);
             Assert.Equal("Module1", moduleDetails.Name);
-            Assert.NotNull(moduleDetails.Id);
+            //Assert.NotNull(moduleDetails.);
             Assert.Equal("Docker", moduleDetails.Type);
-            Assert.NotNull(moduleDetails.Status);
-            Assert.Equal("Created", moduleDetails.Status.RuntimeStatus.Status);
+            Assert.NotNull(moduleDetails.ModuleStatus);
+            Assert.Equal(ModuleStatus.Unknown, moduleDetails.ModuleStatus);
 
             // Act
             await client.StartModuleAsync(moduleSpec.Name);
-            moduleDetails = (await client.GetModules(CancellationToken.None)).FirstOrDefault();
+            moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
 
             // Assert
             Assert.NotNull(moduleDetails);
-            Assert.Equal("Running", moduleDetails.Status.RuntimeStatus.Status);
+            Assert.Equal(ModuleStatus.Running, moduleDetails.ModuleStatus);
 
             // Act
             await client.StopModuleAsync(moduleSpec.Name);
-            moduleDetails = (await client.GetModules(CancellationToken.None)).FirstOrDefault();
+            moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
 
             // Assert
             Assert.NotNull(moduleDetails);
-            Assert.Equal("Stopped", moduleDetails.Status.RuntimeStatus.Status);
+            Assert.Equal(ModuleStatus.Stopped, moduleDetails.ModuleStatus);
 
             // Act - Stopping a stopped module should not throw
             await client.StopModuleAsync(moduleSpec.Name);
-            moduleDetails = (await client.GetModules(CancellationToken.None)).FirstOrDefault();
+            moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
 
             // Assert
             Assert.NotNull(moduleDetails);
-            Assert.Equal("Stopped", moduleDetails.Status.RuntimeStatus.Status);
+            Assert.Equal(ModuleStatus.Stopped, moduleDetails.ModuleStatus);
 
             // Act
             await client.DeleteModuleAsync(moduleSpec.Name);
-            moduleDetails = (await client.GetModules(CancellationToken.None)).FirstOrDefault();
+            moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
 
             // Assert
             Assert.Null(moduleDetails);
