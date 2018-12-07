@@ -10,10 +10,13 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_06_28
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Edge.Agent.Core;
-    using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning;
     using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_06_28.GeneratedCode;
+    using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Microsoft.Azure.Devices.Edge.Util.TransientFaultHandling;
     using Newtonsoft.Json.Linq;
+    using ApiVersion = Util.Edged.ApiVersion;
+    using ErrorResponse = GeneratedCode.ErrorResponse;
     using ModuleSpec = Models.ModuleSpec;
 
     class ModuleManagementHttpClient : ModuleManagementHttpClientVersioned
@@ -193,7 +196,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_06_28
             }
         }
 
-        protected override bool IsTransient(Exception ex) => ex is SwaggerException se && se.StatusCode >= 500;
+        protected override ITransientErrorDetectionStrategy GetTransientErrorDetectionStartegy() => new ErrorDetectionStrategy();
 
         GeneratedCode.ModuleSpec MapToModuleSpec(ModuleSpec moduleSpec)
         {
@@ -248,6 +251,12 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_06_28
             var moduleRuntimeInfo = new ModuleRuntimeInfo<T>(moduleDetails.Name, moduleDetails.Type, status,
                 moduleDetails.Status.RuntimeStatus.Description, exitCode, startTime, exitTime, config);
             return moduleRuntimeInfo;
+        }
+
+        class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
+        {
+            public bool IsTransient(Exception ex) => ex is SwaggerException se
+                && se.StatusCode >= 500;
         }
     }
 }

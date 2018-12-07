@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
         {
             this.serverUrl = new Uri(edleletFixture.ServiceUrl);
             this.apiVersion = "2018-06-28";
-            this.clientApiVersion = Constants.EdgeletManagementApiVersion;
+            this.clientApiVersion = Constants.EdgeletClientApiVersion;
         }
 
         [Fact]

@@ -10,17 +10,16 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet
     using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Models;
     using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Microsoft.Azure.Devices.Edge.Util.Edged;
 
     public class ModuleManagementHttpClient : IModuleManager, IIdentityManager
     {
-        readonly Uri managementUri;
         readonly ModuleManagementHttpClientVersioned inner;
 
         public ModuleManagementHttpClient(Uri managementUri, string edgeletApiVersion, string edgeletClientApiVersion)
         {
-            this.managementUri = Preconditions.CheckNotNull(managementUri, nameof(managementUri));
             Preconditions.CheckNonWhiteSpace(edgeletApiVersion, nameof(edgeletApiVersion));
-            this.inner = this.GetVersionedModuleManagement(edgeletApiVersion, edgeletClientApiVersion);
+            this.inner = this.GetVersionedModuleManagement(managementUri, edgeletApiVersion, edgeletClientApiVersion);
         }
 
         public Task<Identity> CreateIdentityAsync(string name, string managedBy) => this.inner.CreateIdentityAsync(name, managedBy);
@@ -51,20 +50,20 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet
 
         public Task PrepareUpdateAsync(ModuleSpec moduleSpec) => this.inner.PrepareUpdateAsync(moduleSpec);
 
-        ModuleManagementHttpClientVersioned GetVersionedModuleManagement(string edgeletApiVersion, string edgeletClientApiVersion)
+        ModuleManagementHttpClientVersioned GetVersionedModuleManagement(Uri managementUri, string edgeletApiVersion, string edgeletClientApiVersion)
         {
             ApiVersion supportedVersion = this.GetSupportedVersion(edgeletApiVersion, edgeletClientApiVersion);
             if (supportedVersion == ApiVersion.Version20180628)
             {
-                return new Version_2018_06_28.ModuleManagementHttpClient(this.managementUri);
+                return new Version_2018_06_28.ModuleManagementHttpClient(managementUri);
             }
 
             if (supportedVersion == ApiVersion.Version20181230)
             {
-                return new Version_2018_12_30.ModuleManagementHttpClient(this.managementUri);
+                return new Version_2018_12_30.ModuleManagementHttpClient(managementUri);
             }
 
-            return new Version_2018_06_28.ModuleManagementHttpClient(this.managementUri);
+            return new Version_2018_06_28.ModuleManagementHttpClient(managementUri);
         }
 
         ApiVersion GetSupportedVersion(string edgeletApiVersion, string edgeletManagementApiVersion)

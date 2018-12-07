@@ -9,23 +9,26 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning
     using Microsoft.Azure.Devices.Edge.Agent.Core;
     using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Models;
     using Microsoft.Azure.Devices.Edge.Util;
+    using Microsoft.Azure.Devices.Edge.Util.Edged;
     using Microsoft.Azure.Devices.Edge.Util.TransientFaultHandling;
     using Microsoft.Extensions.Logging;
 
     abstract class ModuleManagementHttpClientVersioned
     {
-        static readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy = new ErrorDetectionStrategy();
         static readonly RetryStrategy TransientRetryStrategy =
             new ExponentialBackoff(retryCount: 3, minBackoff: TimeSpan.FromSeconds(2), maxBackoff: TimeSpan.FromSeconds(30), deltaBackoff: TimeSpan.FromSeconds(3));
 
+        readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy;
+
         protected Uri ManagementUri { get; }
 
-        internal ApiVersion Version { get; }
+        protected ApiVersion Version { get; }
 
         protected ModuleManagementHttpClientVersioned(Uri managementUri, ApiVersion version)
         {
-            this.ManagementUri = managementUri;
-            this.Version = version;
+            this.ManagementUri = Preconditions.CheckNotNull(managementUri, nameof(managementUri));
+            this.Version = Preconditions.CheckNotNull(version, nameof(version));
+            this.TransientErrorDetectionStrategy = GetTransientErrorDetectionStartegy();
         }
 
         public abstract Task<Identity> CreateIdentityAsync(string name, string managedBy);
@@ -58,7 +61,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning
 
         protected abstract void HandleException(Exception ex, string operation);
 
-        protected abstract bool IsTransient(Exception ex);
+        protected abstract ITransientErrorDetectionStrategy GetTransientErrorDetectionStartegy();
 
         protected Task Execute(Func<Task> func, string operation) =>
            this.Execute(async () =>
@@ -84,18 +87,11 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning
             }
         }
 
-        
-
-        static Task<T> ExecuteWithRetry<T>(Func<Task<T>> func, Action<RetryingEventArgs> onRetry)
+        Task<T> ExecuteWithRetry<T>(Func<Task<T>> func, Action<RetryingEventArgs> onRetry)
         {
             var transientRetryPolicy = new RetryPolicy(TransientErrorDetectionStrategy, TransientRetryStrategy);
             transientRetryPolicy.Retrying += (_, args) => onRetry(args);
             return transientRetryPolicy.ExecuteAsync(func);
-        }
-
-        class ErrorDetectionStrategy : ITransientErrorDetectionStrategy
-        {
-            public bool IsTransient(Exception ex) => this.IsTransient(ex);
         }
 
         static class Events

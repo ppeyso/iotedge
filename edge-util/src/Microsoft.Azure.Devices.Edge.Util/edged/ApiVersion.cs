@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning
+namespace Microsoft.Azure.Devices.Edge.Util.Edged
 {
     using System;
     using System.Collections.Generic;
