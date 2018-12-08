@@ -219,12 +219,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_12_30
 
         Models.Identity MapFromIdentity(Identity identity)
         {
-            return new Models.Identity()
-            {
-                ModuleId = identity.ModuleId,
-                GenerationId = identity.GenerationId,
-                ManagedBy = identity.ManagedBy
-            };
+            return new Models.Identity(identity.ModuleId, identity.GenerationId, identity.ManagedBy);
         }
 
         ModuleRuntimeInfo<T> GetModuleRuntimeInfo<T>(ModuleDetails moduleDetails)

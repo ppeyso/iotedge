@@ -72,11 +72,11 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             // Arrange
             const string Name = "module1";
             var identity = new Identity
-            {
-                ModuleId = Name,
-                ManagedBy = Constants.ModuleIdentityEdgeManagedByValue,
-                GenerationId = Guid.NewGuid().ToString()
-            };
+            (
+                Name,
+                Guid.NewGuid().ToString(),
+                Constants.ModuleIdentityEdgeManagedByValue
+            );
 
             var identityManager = Mock.Of<IIdentityManager>(m =>
                 m.GetIdentities() == Task.FromResult(Enumerable.Empty<Identity>()) &&

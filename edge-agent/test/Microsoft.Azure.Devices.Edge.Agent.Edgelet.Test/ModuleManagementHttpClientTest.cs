@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             string clientApiVersion = "2018-06-28";
             // Arrange
             IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
-            
+
 
             //client.GetVersionedModuleManagement(this.serverUrl, serverApiVersion, clientApiVersion);
         }
@@ -118,13 +118,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
         {
             // Arrange
             IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
-            var moduleSpec = new ModuleSpec
-            {
-                Name = "Module1",
-                Type = "Docker",
-                EnvironmentVariables = new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar { Key = "E1", Value = "P1" } },
-                Settings = JObject.Parse("{ \"image\": \"testimage\" }")
-            };
+            var moduleSpec = new ModuleSpec("Module1", "Docker", JObject.Parse("{ \"image\": \"testimage\" }"), new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar("E1", "P1") });
 
             // Act
             await client.CreateModuleAsync(moduleSpec);
@@ -163,7 +157,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             Assert.Equal(ModuleStatus.Running, moduleDetails.ModuleStatus);
 
             // Act
-            moduleSpec.EnvironmentVariables.ToList().Add(new EnvVar() { Key = "test", Value = "added" });
+            moduleSpec.EnvironmentVariables.ToList().Add(new EnvVar("test", "added"));
             await client.UpdateModuleAsync(moduleSpec);
             moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
 
@@ -172,7 +166,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             Assert.Equal(ModuleStatus.Unknown, moduleDetails.ModuleStatus);
 
             // Act
-            moduleSpec.EnvironmentVariables.ToList().Add(new EnvVar() { Key = "test", Value = "added" });
+            moduleSpec.EnvironmentVariables.ToList().Add(new EnvVar("test", "added"));
             await client.UpdateAndStartModuleAsync(moduleSpec);
             moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
 
@@ -205,12 +199,11 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
         {
             // Arrange
             var moduleSpec = new ModuleSpec
-            {
-                Name = "Module1",
-                Type = "Docker",
-                EnvironmentVariables = new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar { Key = "E1", Value = "P1" } },
-                Settings = JObject.Parse("{ \"image\": \"testimage\" }")
-            };
+            (
+                "Module1",
+                "Docker",
+                JObject.Parse("{ \"image\": \"testimage\" }"),
+                new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar("E1", "P1") });
             IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
             await client.PrepareUpdateAsync(moduleSpec);
         }
