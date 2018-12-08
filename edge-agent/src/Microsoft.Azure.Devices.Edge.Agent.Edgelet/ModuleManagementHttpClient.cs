@@ -44,13 +44,13 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet
 
         public Task UpdateAndStartModuleAsync(ModuleSpec moduleSpec) => this.inner.UpdateAndStartModuleAsync(moduleSpec);
 
-        public Task<Core.SystemInfo> GetSystemInfoAsync() => this.inner.GetSystemInfoAsync();
+        public Task<SystemInfo> GetSystemInfoAsync() => this.inner.GetSystemInfoAsync();
 
         public Task<IEnumerable<ModuleRuntimeInfo>> GetModules<T>(CancellationToken token) => this.inner.GetModules<T>(token);
 
         public Task PrepareUpdateAsync(ModuleSpec moduleSpec) => this.inner.PrepareUpdateAsync(moduleSpec);
 
-        ModuleManagementHttpClientVersioned GetVersionedModuleManagement(Uri managementUri, string edgeletApiVersion, string edgeletClientApiVersion)
+        internal ModuleManagementHttpClientVersioned GetVersionedModuleManagement(Uri managementUri, string edgeletApiVersion, string edgeletClientApiVersion)
         {
             ApiVersion supportedVersion = this.GetSupportedVersion(edgeletApiVersion, edgeletClientApiVersion);
             if (supportedVersion == ApiVersion.Version20180628)

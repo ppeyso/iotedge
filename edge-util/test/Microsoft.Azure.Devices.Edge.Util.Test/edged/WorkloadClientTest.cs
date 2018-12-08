@@ -26,9 +26,40 @@ namespace Microsoft.Azure.Devices.Edge.Util.Test.Edged
             this.serverUri = new Uri(workloadFixture.ServiceUrl);
         }
 
+        [Fact]
+
+        public void VersioningTest()
+        {
+            string workloadApiVersion = "2018-06-28";
+            string workloadClientApiVersion = "2018-06-28";
+
+            WorkloadClientVersioned client = new WorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId).GetVersionedWorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId);
+            Assert.True(client is Util.Edged.Version_2018_06_28.WorkloadClient);
+
+            workloadApiVersion = "2018-06-28";
+            workloadClientApiVersion = "2018-12-30";
+
+            client = new WorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId).GetVersionedWorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId);
+            Assert.True(client is Util.Edged.Version_2018_06_28.WorkloadClient);
+
+            workloadApiVersion = "2018-12-30";
+            workloadClientApiVersion = "2018-06-28";
+
+            client = new WorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId).GetVersionedWorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId);
+            Assert.True(client is Util.Edged.Version_2018_06_28.WorkloadClient);
+
+            workloadApiVersion = "2018-12-30";
+            workloadClientApiVersion = "2018-12-30";
+
+            client = new WorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId).GetVersionedWorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId);
+            Assert.True(client is Util.Edged.Version_2018_12_30.WorkloadClient);
+        }
+
         [Theory]
         [InlineData("2018-06-28", "2018-06-28")]
         [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        [InlineData("2018-12-30", "2018-12-30")]
         public void InstantiateInvalidArgumentsShouldThrow(string workloadApiVersion, string workloadClientApiVersion)
         {
             Assert.Throws<ArgumentNullException>(() => new WorkloadClient(null, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId));
@@ -43,6 +74,8 @@ namespace Microsoft.Azure.Devices.Edge.Util.Test.Edged
         [Theory]
         [InlineData("2018-06-28", "2018-06-28")]
         [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        [InlineData("2018-12-30", "2018-12-30")]
         public async Task GetServerCertificatesFromEdgeletShouldReturnCert(string workloadApiVersion, string workloadClientApiVersion)
         {
             var workloadClient = new WorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId);
@@ -55,6 +88,8 @@ namespace Microsoft.Azure.Devices.Edge.Util.Test.Edged
         [Theory]
         [InlineData("2018-06-28", "2018-06-28")]
         [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        [InlineData("2018-12-30", "2018-12-30")]
         public async Task EncryptShouldReturnEncryptedTest(string workloadApiVersion, string workloadClientApiVersion)
         {
             var workloadClient = new WorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId);
@@ -67,6 +102,8 @@ namespace Microsoft.Azure.Devices.Edge.Util.Test.Edged
         [Theory]
         [InlineData("2018-06-28", "2018-06-28")]
         [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        [InlineData("2018-12-30", "2018-12-30")]
         public async Task DecryptShouldReturnEncryptedTest(string workloadApiVersion, string workloadClientApiVersion)
         {
             var workloadClient = new WorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId);
@@ -79,6 +116,8 @@ namespace Microsoft.Azure.Devices.Edge.Util.Test.Edged
         [Theory]
         [InlineData("2018-06-28", "2018-06-28")]
         [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        [InlineData("2018-12-30", "2018-12-30")]
         public async Task SignAsync(string workloadApiVersion, string workloadClientApiVersion)
         {
             string payload = "some text";
@@ -99,6 +138,8 @@ namespace Microsoft.Azure.Devices.Edge.Util.Test.Edged
         [Theory]
         [InlineData("2018-06-28", "2018-06-28")]
         [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        [InlineData("2018-12-30", "2018-12-30")]
         public async Task GetTrustBundleAsyncShouldReturnCert(string workloadApiVersion, string workloadClientApiVersion)
         {
             var workloadClient = new WorkloadClient(this.serverUri, workloadApiVersion, workloadClientApiVersion, ModuleId, ModulegenerationId);

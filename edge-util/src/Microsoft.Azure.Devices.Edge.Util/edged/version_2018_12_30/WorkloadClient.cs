@@ -87,8 +87,8 @@ namespace Microsoft.Azure.Devices.Edge.Util.Edged.Version_2018_12_30
             using (HttpClient httpClient = HttpClientHelper.GetHttpClient(this.WorkloadUri))
             {
                 var edgeletHttpClient = new HttpWorkloadClient(httpClient) { BaseUrl = HttpClientHelper.GetBaseUrl(this.WorkloadUri) };
-                SignResponse result = await this.Execute(() => edgeletHttpClient.SignAsync(this.Version.Name, this.ModuleId, this.ModuleGenerationId, signRequest), "Decrypt");
-                return Encoding.UTF8.GetString(result.Digest);
+                SignResponse response = await this.Execute(() => edgeletHttpClient.SignAsync(this.Version.Name, this.ModuleId, this.ModuleGenerationId, signRequest), "SignAsync");
+                return Convert.ToBase64String(response.Digest);
             }
         }
 

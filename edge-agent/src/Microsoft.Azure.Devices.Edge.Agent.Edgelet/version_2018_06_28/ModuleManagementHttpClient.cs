@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_06_28
 
         public override async Task<Models.Identity> UpdateIdentityAsync(string name, string generationId, string managedBy)
         {
-            using (HttpClient httpClient = HttpClientHelper.GetHttpClient(base.ManagementUri))
+            using (HttpClient httpClient = HttpClientHelper.GetHttpClient(this.ManagementUri))
             {
                 var edgeletHttpClient = new EdgeletHttpClient(httpClient) { BaseUrl = HttpClientHelper.GetBaseUrl(this.ManagementUri) };
                 Identity identity = await this.Execute(

@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Edge.Util.Edged
 
         public Task<string> SignAsync(string keyId, string algorithm, string data) => this.inner.SignAsync(keyId, algorithm, data);
 
-        WorkloadClientVersioned GetVersionedWorkloadClient(Uri workloadUri, string edgeletApiVersion, string edgeletClientApiVersion, string moduleId,string moduleGenerationId)
+        internal WorkloadClientVersioned GetVersionedWorkloadClient(Uri workloadUri, string edgeletApiVersion, string edgeletClientApiVersion, string moduleId,string moduleGenerationId)
         {
             ApiVersion supportedVersion = this.GetSupportedVersion(edgeletApiVersion, edgeletClientApiVersion);
             if (supportedVersion == ApiVersion.Version20180628)

@@ -7,12 +7,10 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.ApplicationInsights.Extensibility.Implementation;
     using Microsoft.Azure.Devices.Edge.Agent.Core;
     using Microsoft.Azure.Devices.Edge.Agent.Core.Test;
     using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Models;
     using Microsoft.Azure.Devices.Edge.Util.Test.Common;
-    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Xunit;
 
@@ -20,21 +18,33 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
     public class ModuleManagementHttpClientTest : IClassFixture<EdleletFixture>
     {
         readonly Uri serverUrl;
-        readonly string apiVersion;
-        readonly string clientApiVersion;
 
-        public ModuleManagementHttpClientTest(EdleletFixture edleletFixture)
+        public ModuleManagementHttpClientTest(EdleletFixture edgeletFixture)
         {
-            this.serverUrl = new Uri(edleletFixture.ServiceUrl);
-            this.apiVersion = "2018-06-28";
-            this.clientApiVersion = Constants.EdgeletClientApiVersion;
+            this.serverUrl = new Uri(edgeletFixture.ServiceUrl);
         }
 
         [Fact]
-        public async Task IdentityTest()
+        public void VersioningTest()
+        {
+            string serverApiVersion = "2018-06-28";
+            string clientApiVersion = "2018-06-28";
+            // Arrange
+            IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
+            
+
+            //client.GetVersionedModuleManagement(this.serverUrl, serverApiVersion, clientApiVersion);
+        }
+
+        [Theory]
+        [InlineData("2018-06-28", "2018-06-28")]
+        [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        [InlineData("2018-12-30", "2018-12-30")]
+        public async Task IdentityTest(string serverApiVersion, string clientApiVersion)
         {
             // Arrange
-            IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion, this.clientApiVersion);
+            IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
 
             // Act
             Identity identity1 = await client.CreateIdentityAsync("Foo", Constants.ModuleIdentityEdgeManagedByValue);
@@ -99,11 +109,15 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             Assert.Equal("Foo", identities[1].ModuleId);
         }
 
-        [Fact]
-        public async Task ModulesTest()
+        [Theory]
+        [InlineData("2018-06-28", "2018-06-28")]
+        [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        [InlineData("2018-12-30", "2018-12-30")]
+        public async Task ModulesTest(string serverApiVersion, string clientApiVersion)
         {
             // Arrange
-            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion, this.clientApiVersion);
+            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
             var moduleSpec = new ModuleSpec
             {
                 Name = "Module1",
@@ -149,7 +163,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             Assert.Equal(ModuleStatus.Running, moduleDetails.ModuleStatus);
 
             // Act
-            moduleSpec.EnvironmentVariables.ToList().Add(new EnvVar() { Key = "test", Value = "added"});
+            moduleSpec.EnvironmentVariables.ToList().Add(new EnvVar() { Key = "test", Value = "added" });
             await client.UpdateModuleAsync(moduleSpec);
             moduleDetails = (await client.GetModules<TestConfig>(CancellationToken.None)).FirstOrDefault();
 
@@ -182,8 +196,12 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
             Assert.Null(moduleDetails);
         }
 
-        [Fact]
-        public async Task Test_PrepareUpdate_ShouldSucceed()
+        [Theory]
+        [InlineData("2018-06-28", "2018-06-28")]
+        [InlineData("2018-06-28", "2018-12-30")]
+        [InlineData("2018-12-30", "2018-06-28")]
+        //[InlineData("2018-12-30", "2018-12-30")]
+        public async Task Test_PrepareUpdate_ShouldSucceed(string serverApiVersion, string clientApiVersion)
         {
             // Arrange
             var moduleSpec = new ModuleSpec
@@ -193,7 +211,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
                 EnvironmentVariables = new System.Collections.ObjectModel.ObservableCollection<EnvVar> { new EnvVar { Key = "E1", Value = "P1" } },
                 Settings = JObject.Parse("{ \"image\": \"testimage\" }")
             };
-            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, this.apiVersion, this.clientApiVersion);
+            IModuleManager client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
             await client.PrepareUpdateAsync(moduleSpec);
         }
     }
