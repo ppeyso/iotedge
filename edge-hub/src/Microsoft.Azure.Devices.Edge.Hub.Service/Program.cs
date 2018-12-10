@@ -57,6 +57,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Service
 
 
             Environment.SetEnvironmentVariable("io.netty.allocator.type", "unpooled");
+            Environment.SetEnvironmentVariable("io.netty.noPreferDirect", "False");
             string allocator = Environment.GetEnvironmentVariable("io.netty.allocator.type");
             logger.LogInformation($"io.netty.allocator.type = {allocator}");
 
