@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
     using Microsoft.Azure.Devices.Edge.Hub.Core;
     using Microsoft.Azure.Devices.Edge.Hub.Core.Identity;
     using Microsoft.Azure.Devices.Edge.Util;
-    using Microsoft.Azure.Devices.ProtocolGateway.Identity;
     using Microsoft.Azure.Devices.ProtocolGateway.Mqtt;
     using Microsoft.Azure.Devices.ProtocolGateway.Mqtt.Persistence;
     using Microsoft.Extensions.Logging;
@@ -30,6 +29,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
         readonly IByteBufferAllocator byteBufferAllocator;
         readonly bool autoRead;
         readonly int mqttDecoderMaxMessageSize;
+        readonly bool clientCertAuthAllowed;
 
         public MqttWebSocketListener(
             Settings settings,
@@ -40,8 +40,8 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
             IEventLoopGroup workerGroup,
             IByteBufferAllocator byteBufferAllocator,
             bool autoRead,
-            int mqttDecoderMaxMessageSize
-            )
+            int mqttDecoderMaxMessageSize,
+            bool clientCertAuthAllowed)
         {
             this.settings = Preconditions.CheckNotNull(settings, nameof(settings));
             this.messagingBridgeFactoryFunc = Preconditions.CheckNotNull(messagingBridgeFactoryFunc, nameof(messagingBridgeFactoryFunc));
@@ -52,6 +52,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
             this.byteBufferAllocator = Preconditions.CheckNotNull(byteBufferAllocator, nameof(byteBufferAllocator));
             this.autoRead = autoRead;
             this.mqttDecoderMaxMessageSize = mqttDecoderMaxMessageSize;
+            this.clientCertAuthAllowed = clientCertAuthAllowed;
         }
 
         public string SubProtocol => Constants.WebSocketSubProtocol;
@@ -68,7 +69,7 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Mqtt
         {
             try
             {
-                DeviceIdentityProvider identityProvider = new DeviceIdentityProvider(this.authenticator, this.clientCredentialsFactory, true);
+                DeviceIdentityProvider identityProvider = new DeviceIdentityProvider(this.authenticator, this.clientCredentialsFactory, this.clientCertAuthAllowed);
                 var serverChannel = new ServerWebSocketChannel(
                     webSocket,
                     remoteEndPoint
