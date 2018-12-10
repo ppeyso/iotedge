@@ -2,6 +2,7 @@ ARG base_tag=1.0.0-preview009-linux-arm32v7
 FROM azureiotedge/azureiotedge-hub-base:${base_tag}
 
 ARG EXE_DIR=.
+ENV io.netty.allocator.type unpooled
 
 WORKDIR /app
 
