@@ -162,6 +162,39 @@ paths:
           description: Error
           schema:
             $ref: '#/definitions/ErrorResponse'
+  '/modules/{name}/prepareupdate':
+    post:
+      tags:
+        - Module
+      summary: Update a module.
+      operationId: UpdateModule
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/api-version'
+        - in: path
+          name: name
+          description: The name of the module to update. (urlencoded)
+          required: true
+          type: string
+        - in: body
+          name: module
+          required: true
+          schema:
+            $ref: '#/definitions/ModuleSpec'
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
   '/modules/{name}/start':
     post:
       tags:
