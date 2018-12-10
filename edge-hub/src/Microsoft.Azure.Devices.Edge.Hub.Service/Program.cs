@@ -55,8 +55,9 @@ namespace Microsoft.Azure.Devices.Edge.Hub.Service
             ILogger logger = container.Resolve<ILoggerFactory>().CreateLogger("EdgeHub");
             logger.LogInformation("Starting Edge Hub");
 
-            configuration["io.netty.allocator.type"] = "unpooled";
-            string allocator = configuration.GetValue<string>("io.netty.allocator.type");
+
+            Environment.SetEnvironmentVariable("io.netty.allocator.type", "unpooled");
+            string allocator = Environment.GetEnvironmentVariable("io.netty.allocator.type");
             logger.LogInformation($"io.netty.allocator.type = {allocator}");
 
             LogLogo(logger);
