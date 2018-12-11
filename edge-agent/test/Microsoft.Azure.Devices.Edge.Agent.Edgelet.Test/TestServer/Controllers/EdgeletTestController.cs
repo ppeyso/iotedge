@@ -42,6 +42,12 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test.TestServer.Controllers
         /// <returns>No Content</returns>
         System.Threading.Tasks.Task DeleteModuleAsync(string api_version, string name);
 
+        /// <summary>Prepare to update a module.</summary>
+        /// <param name="api_version">The version of the API.</param>
+        /// <param name="name">The name of the module to update. (urlencoded)</param>
+        /// <returns>No Content</returns>
+        System.Threading.Tasks.Task PrepareUpdateModuleAsync(string api_version, string name, ModuleSpec module);
+
         /// <summary>Start a module.</summary>
         /// <param name="api_version">The version of the API.</param>
         /// <param name="name">The name of the module to start. (urlencoded)</param>
@@ -142,9 +148,10 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test.TestServer.Controllers
         /// <param name="name">The name of the module to delete. (urlencoded)</param>
         /// <returns>No Content</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("modules/{name}")]
-        public System.Threading.Tasks.Task DeleteModule(string api_version, string name)
+        public async System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> DeleteModule(string api_version, string name)
         {
-            return _implementation.DeleteModuleAsync(api_version, name);
+            await _implementation.DeleteModuleAsync(api_version, name);
+            return StatusCode(204);
         }
 
         /// <summary>Start a module.</summary>
@@ -152,9 +159,10 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test.TestServer.Controllers
         /// <param name="name">The name of the module to start. (urlencoded)</param>
         /// <returns>No Content</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("modules/{name}/start")]
-        public System.Threading.Tasks.Task StartModule(string api_version, string name)
+        public async System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> StartModule(string api_version, string name)
         {
-            return _implementation.StartModuleAsync(api_version, name);
+            await _implementation.StartModuleAsync(api_version, name);
+            return StatusCode(204);
         }
 
         /// <summary>Stop a module.</summary>
@@ -173,9 +181,10 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test.TestServer.Controllers
         /// <param name="name">The name of the module to restart. (urlencoded)</param>
         /// <returns>No Content</returns>
         [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.Route("modules/{name}/restart")]
-        public System.Threading.Tasks.Task RestartModule(string api_version, string name)
+        public async System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> RestartModule(string api_version, string name)
         {
-            return _implementation.RestartModuleAsync(api_version, name);
+            await _implementation.RestartModuleAsync(api_version, name);
+            return StatusCode(204);
         }
 
         /// <summary>List identities.</summary>
@@ -213,9 +222,10 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test.TestServer.Controllers
         /// <param name="name">The name of the identity to delete. (urlencoded)</param>
         /// <returns>Ok</returns>
         [Microsoft.AspNetCore.Mvc.HttpDelete, Microsoft.AspNetCore.Mvc.Route("identities/{name}")]
-        public System.Threading.Tasks.Task DeleteIdentity(string api_version, string name)
+        public async System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> DeleteIdentity(string api_version, string name)
         {
-            return _implementation.DeleteIdentityAsync(api_version, name);
+            await _implementation.DeleteIdentityAsync(api_version, name);
+            return StatusCode(204);
         }
 
     }

@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_12_30
             using (HttpClient httpClient = HttpClientHelper.GetHttpClient(this.ManagementUri))
             {
                 var edgeletHttpClient = new EdgeletHttpClient(httpClient) { BaseUrl = HttpClientHelper.GetBaseUrl(this.ManagementUri) };
-                await this.Execute(() => edgeletHttpClient.PrepareUpdateAsync(this.Version.Name, this.MapToModuleSpec(moduleSpec)), $"prepare update for module module {moduleSpec.Name}");
+                await this.Execute(() => edgeletHttpClient.PrepareUpdateModuleAsync(this.Version.Name, moduleSpec.Name, this.MapToModuleSpec(moduleSpec)), $"prepare update for module module {moduleSpec.Name}");
             }
         }
 

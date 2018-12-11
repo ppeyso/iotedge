@@ -29,11 +29,27 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Test
         {
             string serverApiVersion = "2018-06-28";
             string clientApiVersion = "2018-06-28";
-            // Arrange
-            IIdentityManager client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
+            var client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
+            var versionedClient = client.GetVersionedModuleManagement(this.serverUrl, serverApiVersion, clientApiVersion);
+            Assert.True(versionedClient is Version_2018_06_28.ModuleManagementHttpClient);
 
+            serverApiVersion = "2018-06-28";
+            clientApiVersion = "2018-12-30";
+            client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
+            versionedClient = client.GetVersionedModuleManagement(this.serverUrl, serverApiVersion, clientApiVersion);
+            Assert.True(versionedClient is Version_2018_06_28.ModuleManagementHttpClient);
 
-            //client.GetVersionedModuleManagement(this.serverUrl, serverApiVersion, clientApiVersion);
+            serverApiVersion = "2018-12-30";
+            clientApiVersion = "2018-06-28";
+            client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
+            versionedClient = client.GetVersionedModuleManagement(this.serverUrl, serverApiVersion, clientApiVersion);
+            Assert.True(versionedClient is Version_2018_06_28.ModuleManagementHttpClient);
+
+            serverApiVersion = "2018-12-30";
+            clientApiVersion = "2018-12-30";
+            client = new ModuleManagementHttpClient(this.serverUrl, serverApiVersion, clientApiVersion);
+            versionedClient = client.GetVersionedModuleManagement(this.serverUrl, serverApiVersion, clientApiVersion);
+            Assert.True(versionedClient is Version_2018_12_30.ModuleManagementHttpClient);
         }
 
         [Theory]

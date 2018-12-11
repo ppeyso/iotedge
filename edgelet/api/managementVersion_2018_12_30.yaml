@@ -3,7 +3,7 @@ schemes:
   - http
 info:
   title: IoT Edge Management API
-  version: '2018-06-28'
+  version: '2018-12-30'
 tags:
   - name: Module
     x-displayName: Modules
@@ -166,8 +166,8 @@ paths:
     post:
       tags:
         - Module
-      summary: Update a module.
-      operationId: UpdateModule
+      summary: Prepare to update a module.
+      operationId: PrepareUpdateModule
       consumes:
         - application/json
       produces:
