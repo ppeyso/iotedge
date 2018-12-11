@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_06_28
 
     class ModuleManagementHttpClient : ModuleManagementHttpClientVersioned
     {
-        public ModuleManagementHttpClient(Uri managementUri) : base(managementUri, ApiVersion.Version20180628)
+        public ModuleManagementHttpClient(Uri managementUri) : base(managementUri, ApiVersion.Version20180628, new ErrorDetectionStrategy())
         {
         }
 

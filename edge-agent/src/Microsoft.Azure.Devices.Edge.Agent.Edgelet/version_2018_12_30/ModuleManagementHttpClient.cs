@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_12_30
 
     class ModuleManagementHttpClient : ModuleManagementHttpClientVersioned
     {
-        public ModuleManagementHttpClient(Uri managementUri) : base(managementUri, ApiVersion.Version20181230)
+        public ModuleManagementHttpClient(Uri managementUri) : base(managementUri, ApiVersion.Version20181230, new ErrorDetectionStrategy())
         { }
 
         public override async Task<Models.Identity> CreateIdentityAsync(string name, string managedBy)
