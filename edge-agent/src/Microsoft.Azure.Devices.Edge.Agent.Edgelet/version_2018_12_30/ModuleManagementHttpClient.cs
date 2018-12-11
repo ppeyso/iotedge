@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_12_30
 
         public override async Task<Models.Identity> UpdateIdentityAsync(string name, string generationId, string managedBy)
         {
-            using (HttpClient httpClient = HttpClientHelper.GetHttpClient(base.ManagementUri))
+            using (HttpClient httpClient = HttpClientHelper.GetHttpClient(this.ManagementUri))
             {
                 var edgeletHttpClient = new EdgeletHttpClient(httpClient) { BaseUrl = HttpClientHelper.GetBaseUrl(this.ManagementUri) };
                 Identity identity = await this.Execute(() => edgeletHttpClient.UpdateIdentityAsync(
@@ -196,8 +196,6 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_12_30
                     throw exception;
             }
         }
-
-        protected override ITransientErrorDetectionStrategy GetTransientErrorDetectionStartegy() => new ErrorDetectionStrategy();
 
         GeneratedCode.ModuleSpec MapToModuleSpec(ModuleSpec moduleSpec)
         {

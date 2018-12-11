@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Azure.Devices.Edge.Agent.Core;
-
 namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Commands
 {
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Edge.Agent.Core;
     using Microsoft.Azure.Devices.Edge.Agent.Edgelet.Models;
     using Microsoft.Azure.Devices.Edge.Util;
 

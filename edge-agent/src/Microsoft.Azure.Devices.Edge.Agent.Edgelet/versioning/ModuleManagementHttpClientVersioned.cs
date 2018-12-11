@@ -61,8 +61,6 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Versioning
 
         protected abstract void HandleException(Exception ex, string operation);
 
-        protected abstract ITransientErrorDetectionStrategy GetTransientErrorDetectionStartegy();
-
         protected Task Execute(Func<Task> func, string operation) =>
            this.Execute(async () =>
            {

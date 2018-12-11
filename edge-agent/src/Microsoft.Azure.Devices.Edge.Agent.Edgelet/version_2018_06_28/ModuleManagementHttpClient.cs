@@ -196,8 +196,6 @@ namespace Microsoft.Azure.Devices.Edge.Agent.Edgelet.Version_2018_06_28
             }
         }
 
-        protected override ITransientErrorDetectionStrategy GetTransientErrorDetectionStartegy() => new ErrorDetectionStrategy();
-
         GeneratedCode.ModuleSpec MapToModuleSpec(ModuleSpec moduleSpec)
         {
             return new GeneratedCode.ModuleSpec()
